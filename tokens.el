@@ -1,0 +1,1 @@
+euros = cents * 1.0e-2

@@ -7,3 +7,5 @@ edition = "2024"
 members = [ "syntax" ]
 
 [dependencies]
+clap = { version = "4.5.46", features = ["derive"] }
+syntax = { path = "syntax" }
