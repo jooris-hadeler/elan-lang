@@ -40,5 +40,8 @@ pub struct Span {
 }
 
 impl Span {
-    pub const EOI: Span = Span { start: usize::MAX, end: usize::MAX };
+    pub const EOI: Span = Span {
+        start: usize::MAX,
+        end: usize::MAX,
+    };
 }

@@ -153,20 +153,55 @@ impl<'src> Lexer<'src> {
             self.next();
         }
 
+        // if the number is only the base prefix throw an error
+        if self.pos - start <= 2 {
+            return Some(Err(SyntaxError {
+                kind: SyntaxErrorKind::InvalidNumber,
+                span: Span {
+                    start,
+                    end: self.pos,
+                },
+            }));
+        }
+
         Some(Ok(self.create_token(start, byte_start, TokenKind::Integer)))
     }
 
     /// Used to lex the next [TokenKind::Float] [Token].
     fn next_float_token(&mut self, start: usize, byte_start: usize) -> LexerResult<'src> {
+        let after_dot_start = self.pos;
         while self.peek().is_some_and(|ch| matches!(ch, '0'..='9')) {
             self.next();
+        }
+
+        // if we haven't had a digit after the `.` throw an error.
+        if self.pos - after_dot_start == 0 {
+            return Some(Err(SyntaxError {
+                kind: SyntaxErrorKind::InvalidNumber,
+                span: Span {
+                    start,
+                    end: self.pos,
+                },
+            }));
         }
 
         if self.try_next('e') {
             self.try_next('-');
 
+            let after_e_start = self.pos;
             while self.peek().is_some_and(|ch| matches!(ch, '0'..='9')) {
                 self.next();
+            }
+
+            // if we haven't found a digit after the `e` throw an error.
+            if self.pos - after_e_start == 0 {
+                return Some(Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }));
             }
         }
 
@@ -252,6 +287,17 @@ impl<'src> Lexer<'src> {
                 }));
             }
         }))
+    }
+
+    /// Collects the lexed [Token]s into a [Vec] unless a [SyntaxError] occurs.
+    pub fn collect_tokens(mut self) -> Result<Vec<Token<'src>>, SyntaxError> {
+        let mut tokens = Vec::new();
+
+        while let Some(token) = self.next_token() {
+            tokens.push(token?);
+        }
+
+        Ok(tokens)
     }
 }
 
@@ -397,7 +443,7 @@ mod test {
             },
         ];
 
-        let tokens = Lexer::new(input).collect::<Result<Vec<_>, _>>()?;
+        let tokens = Lexer::new(input).collect_tokens()?;
         assert_eq!(tokens.as_slice(), expected.as_slice());
 
         Ok(())
@@ -413,5 +459,51 @@ mod test {
 
         let mut lexer = Lexer::new(input);
         assert_eq!(lexer.next_token(), expected);
+    }
+
+    #[test]
+    fn invalid_numbers() {
+        let test_cases = [
+            (
+                "0x",
+                Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span { start: 0, end: 2 },
+                }),
+            ),
+            (
+                "0b",
+                Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span { start: 0, end: 2 },
+                }),
+            ),
+            (
+                "0o",
+                Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span { start: 0, end: 2 },
+                }),
+            ),
+            (
+                "1.e-3",
+                Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span { start: 0, end: 2 },
+                }),
+            ),
+            (
+                "1.3e-",
+                Err(SyntaxError {
+                    kind: SyntaxErrorKind::InvalidNumber,
+                    span: Span { start: 0, end: 5 },
+                }),
+            ),
+        ];
+
+        for (input, output) in test_cases {
+            let lexer = Lexer::new(input);
+            assert_eq!(lexer.collect_tokens(), output);
+        }
     }
 }

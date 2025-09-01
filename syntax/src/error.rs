@@ -21,4 +21,6 @@ pub enum SyntaxErrorKind {
         got: TokenKind,
     },
     UnexpectedEndOfInput,
+    NumberOverflow,
+    InvalidNumber,
 }

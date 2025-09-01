@@ -24,13 +24,14 @@ fn tokenize_file(path: PathBuf) {
     };
 
     let lexer = Lexer::new(&content);
-    for token in lexer {
-        match token {
-            Ok(token) => println!("{token:?}"),
-            Err(err) => {
-                eprintln!("error: {err:?}");
-                break;
+    let tokens = lexer.collect_tokens();
+
+    match tokens {
+        Ok(tokens) => {
+            for token in tokens {
+                println!("{token:?}");
             }
         }
+        Err(err) => eprintln!("error: {err:?}"),
     }
 }
