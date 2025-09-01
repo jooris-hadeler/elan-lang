@@ -1,9 +1,9 @@
-# ELAN Compiler
+# Myriad Compiler
 
-ELAN is a simple statically typed language with a modern syntax. It's supposed to be as easy as Python but as powerful as C.
+Myriad is a simple statically typed language with a modern syntax. It's supposed to be as easy as Python but as powerful as C.
 
 ## Code Example
-```elan
+```myriad
 /* 
  * This function checks whether a number is prime or composite.
  * 
@@ -39,4 +39,4 @@ proc main() i32 {
 
 ## Language Support
 
-If you are looking for ELAN Language Support look no further than [here](https://github.com/jooris-hadeler/elan-language-support).
+If you are looking for Myriad Language Support look no further than [here](https://github.com/jooris-hadeler/myriad-language-support).

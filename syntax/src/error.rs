@@ -1,12 +1,24 @@
-use crate::token::Span;
+use crate::token::{Span, TokenKind};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SyntaxError {
     pub kind: SyntaxErrorKind,
     pub span: Span,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+impl SyntaxError {
+    pub const UNEXPECTED_EOI: SyntaxError = SyntaxError {
+        kind: SyntaxErrorKind::UnexpectedEndOfInput,
+        span: Span::EOI,
+    };
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SyntaxErrorKind {
     InvalidLexicalToken,
+    UnexpectedToken {
+        expected: &'static [TokenKind],
+        got: TokenKind,
+    },
+    UnexpectedEndOfInput,
 }
